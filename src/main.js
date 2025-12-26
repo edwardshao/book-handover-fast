@@ -489,7 +489,7 @@ const renderHandoverBookTable = (books, showHandoverButton = false) => {
 
     let html = '<table class="data-table"><thead><tr><th>書名</th><th>數量</th><th>ISBN</th><th>已點交</th>';
     if (showHandoverButton) {
-        html += '<th>操作</th>';
+        html += '<th>手動點交</th>';
     }
     html += '</tr></thead><tbody>';
 
