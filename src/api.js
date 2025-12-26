@@ -1,11 +1,12 @@
 const fetchWithProxy = async (targetUrl) => {
-    // Using corsproxy.io as a more reliable alternative
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+    // Switching back to allorigins.win as requested
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
     const response = await fetch(proxyUrl);
     if (!response.ok) {
         throw new Error(`Proxy Error: ${response.status}`);
     }
-    return await response.text();
+    const data = await response.json();
+    return data.contents;
 };
 
 const searchBooksDotComTw = async (title) => {
