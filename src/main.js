@@ -608,13 +608,19 @@ const renderHandoverBookTable = (books, showHandoverButton = false, buttonType =
 
     books.forEach(book => {
         let isbnDisplay = '查無 ISBN';
+        let titleHtml = book.title;
+
         if (book.isbns && book.isbns.length > 0) {
             isbnDisplay = book.isbns.join(', ');
+        } else {
+            // Add search link for books without ISBN
+            const searchUrl = `https://search.books.com.tw/search/query/key/${encodeURIComponent(book.title)}/cat/all`;
+            titleHtml += ` <a href="${searchUrl}" target="_blank" style="text-decoration: none; font-size: 0.8rem; margin-left: 0.5rem;" title="在博客來搜尋">🔍</a>`;
         }
 
         html += `
       <tr>
-        <td>${book.title}</td>
+        <td>${titleHtml}</td>
         <td>${book.quantity}</td>
         <td style="font-size: 0.85rem; color: var(--text-secondary);">${isbnDisplay}</td>
         <td><span style="color: ${book.handedOver >= book.quantity ? 'var(--success-color)' : 'var(--warning-color)'}; font-weight: 600;">${book.handedOver}/${book.quantity}</span></td>`;
@@ -644,13 +650,19 @@ const renderBookTable = (books, showNoISBN = false) => {
     let html = '<table class="data-table"><thead><tr><th>書名</th><th>數量</th><th>ISBN</th><th>已點交</th></tr></thead><tbody>';
     books.forEach(book => {
         let isbnDisplay = '查無 ISBN';
+        let titleHtml = book.title;
+
         if (!showNoISBN && book.isbns && book.isbns.length > 0) {
             isbnDisplay = book.isbns.join(', ');
+        } else if (showNoISBN) {
+            // Add search link for books without ISBN
+            const searchUrl = `https://search.books.com.tw/search/query/key/${encodeURIComponent(book.title)}/cat/all`;
+            titleHtml += ` <a href="${searchUrl}" target="_blank" style="text-decoration: none; font-size: 0.8rem; margin-left: 0.5rem;" title="在博客來搜尋">🔍</a>`;
         }
 
         html += `
       <tr>
-        <td>${book.title}</td>
+        <td>${titleHtml}</td>
         <td>${book.quantity}</td>
         <td style="font-size: 0.85rem; color: var(--text-secondary);">${isbnDisplay}</td>
         <td><span style="color: ${book.handedOver >= book.quantity ? 'var(--success-color)' : 'var(--warning-color)'}; font-weight: 600;">${book.handedOver}/${book.quantity}</span></td>
