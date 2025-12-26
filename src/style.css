@@ -130,8 +130,15 @@ footer {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 h2 {
@@ -177,6 +184,10 @@ h2 {
   background: var(--border-color);
 }
 
+.btn-primary {
+  background: var(--success-color);
+}
+
 .btn-danger {
   background: var(--danger-color);
 }
@@ -188,7 +199,8 @@ h2 {
   margin-top: 1rem;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   text-align: left;
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
@@ -271,22 +283,29 @@ input[type="text"]:focus {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }

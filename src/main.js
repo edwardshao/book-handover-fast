@@ -46,6 +46,16 @@ const renderView = (view) => {
     currentView = view;
     const container = document.getElementById('view-container');
 
+    // Update navigation active state
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+        if (btn.getAttribute('data-view') === view) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
     switch (view) {
         case 'convert':
             container.innerHTML = renderConvertView();
@@ -155,13 +165,28 @@ const processCSVFile = async (file) => {
         html += `<tr><td>${book.title}</td><td>${book.quantity}</td><td>${isbnDisplay}</td></tr>`;
     });
     html += '</tbody></table>';
-    html += '<button class="btn" style="margin-top: 1.5rem;" id="download-json-btn">💾 下載 JSON 檔案</button>';
+    html += '<div style="margin-top: 1.5rem;">';
+    html += '<button class="btn" id="download-json-btn" style="margin-right: 1rem;">💾 下載 JSON 檔案</button>';
+    html += '<button class="btn btn-primary" id="import-db-btn">📥 直接匯入資料庫</button>';
+    html += '</div>';
 
     resultDiv.innerHTML = html;
 
     document.getElementById('download-json-btn').addEventListener('click', () => {
         const timestamp = new Date().toISOString().split('T')[0];
         downloadJSON(results, `book-handover-list-${timestamp}.json`);
+    });
+
+    document.getElementById('import-db-btn').addEventListener('click', async () => {
+        const transformedBooks = results.map(item => ({
+            title: item.title,
+            quantity: parseInt(item.quantity) || 0,
+            isbns: Array.isArray(item.isbns) ? item.isbns : [],
+            handedOver: 0
+        }));
+        await saveBooks(transformedBooks);
+        await loadBooksData();
+        renderView('upload'); // Navigate to upload view to show the updated data
     });
 };
 
@@ -175,9 +200,12 @@ const renderUploadView = () => {
       <p class="description">上傳先前產生的 JSON 書單檔案，系統會將資料儲存至本地資料庫。</p>
       
       ${hasData ? `
-        <div style="background: rgba(248, 81, 73, 0.1); border: 1px solid var(--danger-color); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-          <p style="color: var(--danger-color);">⚠️ 資料庫中已有 ${booksData.length} 筆書籍資料</p>
-          <button class="btn btn-danger" id="clear-db-btn" style="margin-top: 0.5rem;">🗑️ 清空現有資料</button>
+        <div style="background: rgba(88, 166, 255, 0.1); border: 1px solid var(--accent-color); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+          <p style="color: var(--accent-color);">📊 資料庫中已有 ${booksData.length} 筆書籍資料</p>
+          <div style="margin-top: 0.5rem;">
+            <button class="btn" id="download-db-btn" style="margin-right: 0.5rem;">💾 下載書單</button>
+            <button class="btn btn-danger" id="clear-db-btn">🗑️ 清空現有資料</button>
+          </div>
         </div>
       ` : ''}
       
@@ -196,6 +224,20 @@ const setupUploadHandlers = () => {
     const uploadBox = document.getElementById('json-upload-box');
     const fileInput = document.getElementById('json-file-input');
     const clearBtn = document.getElementById('clear-db-btn');
+    const downloadBtn = document.getElementById('download-db-btn');
+
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => {
+            // Export current booklist from IndexedDB
+            const exportData = booksData.map(book => ({
+                title: book.title,
+                quantity: book.quantity,
+                isbns: book.isbns
+            }));
+            const timestamp = new Date().toISOString().split('T')[0];
+            downloadJSON(exportData, `book-handover-list-${timestamp}.json`);
+        });
+    }
 
     if (clearBtn) {
         clearBtn.addEventListener('click', async () => {
