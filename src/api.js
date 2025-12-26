@@ -1,12 +1,12 @@
 const fetchWithProxy = async (targetUrl) => {
-    // Switching back to allorigins.win as requested
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+    // Switching to CodeTabs as requested
+    const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
     const response = await fetch(proxyUrl);
     if (!response.ok) {
         throw new Error(`Proxy Error: ${response.status}`);
     }
-    const data = await response.json();
-    return data.contents;
+    // CodeTabs returns raw HTML text, not JSON
+    return await response.text();
 };
 
 const searchBooksDotComTw = async (title) => {
