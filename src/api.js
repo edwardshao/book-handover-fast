@@ -12,7 +12,7 @@ export const searchISBNByTitle = async (title) => {
             const identifiers = item.volumeInfo?.industryIdentifiers;
             if (identifiers) {
                 identifiers.forEach(id => {
-                    if (id.type === 'ISBN_13' || id.type === 'ISBN_10') {
+                    if (id.type === 'ISBN_13') {
                         isbns.add(id.identifier);
                     }
                 });
