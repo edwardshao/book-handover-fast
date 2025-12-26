@@ -213,6 +213,19 @@ h2 {
   transform: scale(0.95);
 }
 
+.btn-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-decrement {
+  background: var(--border-color);
+}
+
+.btn-decrement:hover {
+  background: var(--text-secondary);
+}
+
 /* Table / List Styles */
 .data-table {
   width: 100%;

@@ -366,12 +366,12 @@ const renderHandoverView = () => {
       <div class="split-left">
         <div class="book-list-section">
           <h3>📋 未點交的書 <span style="color: var(--warning-color);">(${pending.length})</span></h3>
-          <div id="pending-books">${renderHandoverBookTable(pending, true)}</div>
+          <div id="pending-books">${renderHandoverBookTable(pending, true, 'pending')}</div>
         </div>
         
         <div class="book-list-section">
           <h3>✅ 已點交的書 <span style="color: var(--success-color);">(${completed.length})</span></h3>
-          <div id="completed-books">${renderHandoverBookTable(completed, false)}</div>
+          <div id="completed-books">${renderHandoverBookTable(completed, true, 'completed')}</div>
         </div>
       </div>
       
@@ -394,38 +394,52 @@ const setupHandoverHandlers = () => {
     const isbnInput = document.getElementById('isbn-input');
     const matchResult = document.getElementById('match-result');
     const pendingBooksContainer = document.getElementById('pending-books');
+    const completedBooksContainer = document.getElementById('completed-books');
 
     // Helper function to refresh book lists
     const refreshBookLists = () => {
         document.getElementById('pending-books').innerHTML = renderHandoverBookTable(
             booksData.filter(book => book.handedOver < book.quantity),
-            true
+            true,
+            'pending'
         );
         document.getElementById('completed-books').innerHTML = renderHandoverBookTable(
             booksData.filter(book => book.handedOver >= book.quantity),
-            false
+            true,
+            'completed'
         );
     };
 
-    // Handle manual handover button clicks (event delegation)
-    if (pendingBooksContainer) {
-        pendingBooksContainer.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('btn-handover')) {
-                const bookId = parseInt(e.target.getAttribute('data-book-id'));
-                const book = booksData.find(b => b.id === bookId);
+    // Handler for button clicks
+    const handleButtonClick = async (e) => {
+        if (e.target.classList.contains('btn-handover')) {
+            const bookId = parseInt(e.target.getAttribute('data-book-id'));
+            const book = booksData.find(b => b.id === bookId);
 
-                if (book && book.handedOver < book.quantity) {
-                    // Increment by 1
-                    const newHandedOver = book.handedOver + 1;
+            if (book) {
+                let newHandedOver;
+                if (e.target.classList.contains('btn-increment')) {
+                    newHandedOver = book.handedOver + 1;
+                } else if (e.target.classList.contains('btn-decrement')) {
+                    newHandedOver = Math.max(0, book.handedOver - 1);
+                }
+
+                if (newHandedOver !== undefined) {
                     await updateBookHandedOver(book.id, newHandedOver);
                     await loadBooksData();
-
-                    // Refresh the lists
                     refreshBookLists();
                     updateProgress();
                 }
             }
-        });
+        }
+    };
+
+    // Add event listeners (delegation)
+    if (pendingBooksContainer) {
+        pendingBooksContainer.addEventListener('click', handleButtonClick);
+    }
+    if (completedBooksContainer) {
+        completedBooksContainer.addEventListener('click', handleButtonClick);
     }
 
     isbnInput.addEventListener('keypress', async (e) => {
@@ -482,7 +496,7 @@ const setupHandoverHandlers = () => {
 };
 
 // Helper: Render book table for handover view (with manual handover buttons)
-const renderHandoverBookTable = (books, showHandoverButton = false) => {
+const renderHandoverBookTable = (books, showHandoverButton = false, buttonType = 'pending') => {
     if (books.length === 0) {
         return '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">目前沒有資料</p>';
     }
@@ -507,9 +521,15 @@ const renderHandoverBookTable = (books, showHandoverButton = false) => {
         <td><span style="color: ${book.handedOver >= book.quantity ? 'var(--success-color)' : 'var(--warning-color)'}; font-weight: 600;">${book.handedOver}/${book.quantity}</span></td>`;
 
         if (showHandoverButton) {
-            html += `<td><button class="btn-handover" data-book-id="${book.id}">+1</button></td>`;
+            html += `<td><div class="btn-group">`;
+            if (buttonType === 'completed') {
+                html += `<button class="btn-handover btn-decrement" data-book-id="${book.id}">-1</button>`;
+            } else {
+                html += `<button class="btn-handover btn-decrement" data-book-id="${book.id}">-1</button>
+                         <button class="btn-handover btn-increment" data-book-id="${book.id}">+1</button>`;
+            }
+            html += `</div></td>`;
         }
-
         html += '</tr>';
     });
     html += '</tbody></table>';
