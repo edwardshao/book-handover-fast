@@ -335,6 +335,8 @@ const renderWithISBNView = () => {
 // ===== VIEW 4: Books without ISBN =====
 const renderWithoutISBNView = () => {
     const booksWithoutISBN = booksData.filter(book => !book.isbns || book.isbns.length === 0);
+    const pending = booksWithoutISBN.filter(book => book.handedOver < book.quantity);
+    const completed = booksWithoutISBN.filter(book => book.handedOver >= book.quantity);
 
     return `
     <div class="view-card">
@@ -342,8 +344,13 @@ const renderWithoutISBNView = () => {
       <p class="description">顯示所有未查詢到 ISBN 的書籍資料</p>
       
       <div class="book-list-section">
-        <h3>📋 書籍列表 <span style="color: var(--warning-color);">(${booksWithoutISBN.length})</span></h3>
-        ${renderBookTable(booksWithoutISBN, true)}
+        <h3>📋 未點交的書 <span style="color: var(--warning-color);">(${pending.length})</span></h3>
+        ${renderBookTable(pending, true)}
+      </div>
+
+      <div class="book-list-section" style="margin-top: 1.5rem;">
+        <h3>✅ 已點交的書 <span style="color: var(--success-color);">(${completed.length})</span></h3>
+        ${renderBookTable(completed, true)}
       </div>
     </div>
   `;
