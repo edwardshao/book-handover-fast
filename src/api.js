@@ -1,12 +1,36 @@
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const fetchWithProxy = async (targetUrl) => {
-    // Switching to CodeTabs as requested
     const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-    const response = await fetch(proxyUrl);
-    if (!response.ok) {
-        throw new Error(`Proxy Error: ${response.status}`);
+    const maxRetries = 5;
+
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const response = await fetch(proxyUrl);
+
+            if (response.ok) {
+                return await response.text();
+            }
+
+            if (response.status === 429 || response.status === 400) {
+                console.warn(`Proxy returned ${response.status}. Retrying (${i + 1}/${maxRetries})...`);
+                if (i < maxRetries - 1) {
+                    await sleep(1000); // Sleep 1 second
+                    continue;
+                }
+            }
+
+            throw new Error(`Proxy Error: ${response.status}`);
+        } catch (error) {
+            // If it's the last retry, rethrow the error
+            if (i === maxRetries - 1) {
+                throw error;
+            }
+
+            console.warn(`Fetch error: ${error.message}. Retrying (${i + 1}/${maxRetries})...`);
+            await sleep(1000);
+        }
     }
-    // CodeTabs returns raw HTML text, not JSON
-    return await response.text();
 };
 
 const searchBooksDotComTw = async (title) => {
