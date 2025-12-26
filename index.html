@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖書點交系統 | Book Handover System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/index-B47ffuGU.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-p-Dw3xQw.css">
+</head>
+<body class="dark-theme">
+    <div id="app">
+        <header>
+            <div class="logo">
+                <span class="icon">📚</span>
+                <h1>圖書點交系統</h1>
+            </div>
+            <nav id="main-nav">
+                <button data-view="convert" class="nav-btn active">1. 轉換書單</button>
+                <button data-view="upload" class="nav-btn">2. 上傳系統書單</button>
+                <button data-view="with-isbn" class="nav-btn">3. 有 ISBN 的書</button>
+                <button data-view="without-isbn" class="nav-btn">4. 沒有 ISBN 的書</button>
+                <button data-view="handover" class="nav-btn highlight">5. 點交系統</button>
+            </nav>
+        </header>
+
+        <main id="content-area">
+            <!-- Content will be dynamically injected here -->
+            <div id="loader" class="hidden">
+                <div class="spinner"></div>
+                <p>搜尋中，請稍候...</p>
+            </div>
+            
+            <section id="view-container">
+                <!-- Views will be rendered here -->
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 圖書點交系統 | 點交完成度: <span id="overall-progress">0</span>%</p>
+        </footer>
+    </div>
+</body>
+</html>
