@@ -359,12 +359,12 @@ const renderHandoverView = () => {
       <div class="split-left">
         <div class="book-list-section">
           <h3>📋 未點交的書 <span style="color: var(--warning-color);">(${pending.length})</span></h3>
-          <div id="pending-books">${renderBookTable(pending)}</div>
+          <div id="pending-books">${renderHandoverBookTable(pending, true)}</div>
         </div>
         
         <div class="book-list-section">
           <h3>✅ 已點交的書 <span style="color: var(--success-color);">(${completed.length})</span></h3>
-          <div id="completed-books">${renderBookTable(completed)}</div>
+          <div id="completed-books">${renderHandoverBookTable(completed, false)}</div>
         </div>
       </div>
       
@@ -386,6 +386,39 @@ const renderHandoverView = () => {
 const setupHandoverHandlers = () => {
     const isbnInput = document.getElementById('isbn-input');
     const matchResult = document.getElementById('match-result');
+    const pendingBooksContainer = document.getElementById('pending-books');
+
+    // Handle manual handover button clicks (event delegation)
+    if (pendingBooksContainer) {
+        pendingBooksContainer.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('btn-handover')) {
+                const bookId = parseInt(e.target.getAttribute('data-book-id'));
+                const book = booksData.find(b => b.id === bookId);
+
+                if (book && book.handedOver < book.quantity) {
+                    // Increment by 1
+                    const newHandedOver = book.handedOver + 1;
+                    await updateBookHandedOver(book.id, newHandedOver);
+                    await loadBooksData();
+
+                    // Refresh the lists
+                    document.getElementById('pending-books').innerHTML = renderHandoverBookTable(
+                        booksData.filter(book => book.handedOver < book.quantity),
+                        true
+                    );
+                    document.getElementById('completed-books').innerHTML = renderHandoverBookTable(
+                        booksData.filter(book => book.handedOver >= book.quantity),
+                        false
+                    );
+
+                    updateProgress();
+
+                    // Re-attach event listeners after DOM update
+                    setupHandoverHandlers();
+                }
+            }
+        });
+    }
 
     isbnInput.addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') {
@@ -398,9 +431,9 @@ const setupHandoverHandlers = () => {
             );
 
             if (matchedBook && matchedBook.handedOver < matchedBook.quantity) {
-                // Update quantity
-                matchedBook.handedOver += 1;
-                await updateBookHandedOver(matchedBook.id, matchedBook.handedOver);
+                // Increment by 1
+                const newHandedOver = matchedBook.handedOver + 1;
+                await updateBookHandedOver(matchedBook.id, newHandedOver);
                 await loadBooksData();
 
                 // Show success message
@@ -413,14 +446,19 @@ const setupHandoverHandlers = () => {
         `;
 
                 // Refresh the lists
-                document.getElementById('pending-books').innerHTML = renderBookTable(
-                    booksData.filter(book => book.handedOver < book.quantity)
+                document.getElementById('pending-books').innerHTML = renderHandoverBookTable(
+                    booksData.filter(book => book.handedOver < book.quantity),
+                    true
                 );
-                document.getElementById('completed-books').innerHTML = renderBookTable(
-                    booksData.filter(book => book.handedOver >= book.quantity)
+                document.getElementById('completed-books').innerHTML = renderHandoverBookTable(
+                    booksData.filter(book => book.handedOver >= book.quantity),
+                    false
                 );
 
                 updateProgress();
+
+                // Re-attach event listeners after DOM update
+                setupHandoverHandlers();
             } else if (matchedBook && matchedBook.handedOver >= matchedBook.quantity) {
                 matchResult.innerHTML = `
           <div style="background: rgba(210, 153, 34, 0.2); border: 1px solid var(--warning-color); border-radius: 8px; padding: 1rem;">
@@ -444,6 +482,41 @@ const setupHandoverHandlers = () => {
             }, 2000);
         }
     });
+};
+
+// Helper: Render book table for handover view (with manual handover buttons)
+const renderHandoverBookTable = (books, showHandoverButton = false) => {
+    if (books.length === 0) {
+        return '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">目前沒有資料</p>';
+    }
+
+    let html = '<table class="data-table"><thead><tr><th>書名</th><th>數量</th><th>ISBN</th><th>已點交</th>';
+    if (showHandoverButton) {
+        html += '<th>操作</th>';
+    }
+    html += '</tr></thead><tbody>';
+
+    books.forEach(book => {
+        let isbnDisplay = '查無 ISBN';
+        if (book.isbns && book.isbns.length > 0) {
+            isbnDisplay = book.isbns.join(', ');
+        }
+
+        html += `
+      <tr>
+        <td>${book.title}</td>
+        <td>${book.quantity}</td>
+        <td style="font-size: 0.85rem; color: var(--text-secondary);">${isbnDisplay}</td>
+        <td><span style="color: ${book.handedOver >= book.quantity ? 'var(--success-color)' : 'var(--warning-color)'}; font-weight: 600;">${book.handedOver}/${book.quantity}</span></td>`;
+
+        if (showHandoverButton) {
+            html += `<td><button class="btn-handover" data-book-id="${book.id}">+1</button></td>`;
+        }
+
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    return html;
 };
 
 // Helper: Render book table

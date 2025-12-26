@@ -192,6 +192,27 @@ h2 {
   background: var(--danger-color);
 }
 
+.btn-handover {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-handover:hover {
+  background: var(--accent-hover);
+  transform: scale(1.05);
+}
+
+.btn-handover:active {
+  transform: scale(0.95);
+}
+
 /* Table / List Styles */
 .data-table {
   width: 100%;
