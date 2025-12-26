@@ -1,6 +1,12 @@
 export const searchISBNByTitle = async (title) => {
     try {
-        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}&maxResults=5`);
+        const apiKey = localStorage.getItem('google_books_api_key');
+        let url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}&maxResults=5`;
+        if (apiKey) {
+            url += `&key=${apiKey}`;
+        }
+
+        const response = await fetch(url);
         const data = await response.json();
 
         if (!data.items || data.items.length === 0) {
