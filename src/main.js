@@ -350,9 +350,9 @@ const setupHandoverHandlers = () => {
             const isbn = isbnInput.value.trim();
             if (!isbn) return;
 
-            // Find matching book
+            // Find matching book (exact match only - ISBN-13 is 13 digits)
             const matchedBook = booksData.find(book =>
-                book.isbns && book.isbns.some(bookIsbn => bookIsbn.includes(isbn) || isbn.includes(bookIsbn))
+                book.isbns && book.isbns.some(bookIsbn => bookIsbn === isbn)
             );
 
             if (matchedBook && matchedBook.handedOver < matchedBook.quantity) {
