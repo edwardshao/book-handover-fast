@@ -395,6 +395,18 @@ const setupHandoverHandlers = () => {
     const matchResult = document.getElementById('match-result');
     const pendingBooksContainer = document.getElementById('pending-books');
 
+    // Helper function to refresh book lists
+    const refreshBookLists = () => {
+        document.getElementById('pending-books').innerHTML = renderHandoverBookTable(
+            booksData.filter(book => book.handedOver < book.quantity),
+            true
+        );
+        document.getElementById('completed-books').innerHTML = renderHandoverBookTable(
+            booksData.filter(book => book.handedOver >= book.quantity),
+            false
+        );
+    };
+
     // Handle manual handover button clicks (event delegation)
     if (pendingBooksContainer) {
         pendingBooksContainer.addEventListener('click', async (e) => {
@@ -409,19 +421,8 @@ const setupHandoverHandlers = () => {
                     await loadBooksData();
 
                     // Refresh the lists
-                    document.getElementById('pending-books').innerHTML = renderHandoverBookTable(
-                        booksData.filter(book => book.handedOver < book.quantity),
-                        true
-                    );
-                    document.getElementById('completed-books').innerHTML = renderHandoverBookTable(
-                        booksData.filter(book => book.handedOver >= book.quantity),
-                        false
-                    );
-
+                    refreshBookLists();
                     updateProgress();
-
-                    // Re-attach event listeners after DOM update
-                    setupHandoverHandlers();
                 }
             }
         });
@@ -448,24 +449,13 @@ const setupHandoverHandlers = () => {
           <div style="background: rgba(35, 134, 54, 0.2); border: 1px solid var(--success-color); border-radius: 8px; padding: 1rem;">
             <p style="color: var(--success-color); font-weight: 600;">✅ 點交成功！</p>
             <p style="margin-top: 0.5rem;">${matchedBook.title}</p>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">已點交: ${matchedBook.handedOver}/${matchedBook.quantity}</p>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">已點交: ${newHandedOver}/${matchedBook.quantity}</p>
           </div>
         `;
 
                 // Refresh the lists
-                document.getElementById('pending-books').innerHTML = renderHandoverBookTable(
-                    booksData.filter(book => book.handedOver < book.quantity),
-                    true
-                );
-                document.getElementById('completed-books').innerHTML = renderHandoverBookTable(
-                    booksData.filter(book => book.handedOver >= book.quantity),
-                    false
-                );
-
+                refreshBookLists();
                 updateProgress();
-
-                // Re-attach event listeners after DOM update
-                setupHandoverHandlers();
             } else if (matchedBook && matchedBook.handedOver >= matchedBook.quantity) {
                 matchResult.innerHTML = `
           <div style="background: rgba(210, 153, 34, 0.2); border: 1px solid var(--warning-color); border-radius: 8px; padding: 1rem;">
