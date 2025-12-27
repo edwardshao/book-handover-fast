@@ -358,18 +358,32 @@ const renderWithISBNView = () => {
     const pending = booksWithISBN.filter(book => book.handedOver < book.quantity);
     const completed = booksWithISBN.filter(book => book.handedOver >= book.quantity);
 
+    // Calculate total quantities
+    const pendingTotal = pending.reduce((sum, book) => sum + (book.quantity - book.handedOver), 0);
+    const completedTotal = completed.reduce((sum, book) => sum + book.handedOver, 0);
+
     return `
     <div class="view-card">
       <h2>✅ 有 ISBN 的書籍</h2>
       <p class="description">顯示所有已查詢到 ISBN 的書籍資料</p>
       
       <div class="book-list-section">
-        <h3>📋 未點交的書 <span style="color: var(--warning-color);">(${pending.length})</span></h3>
+        <h3>
+          📋 未點交的書
+          <span style="color: var(--warning-color); font-size: 0.9em;">
+            (${pending.length} 款 / 共 ${pendingTotal} 本)
+          </span>
+        </h3>
         ${renderBookTable(pending)}
       </div>
       
       <div class="book-list-section" style="margin-top: 1.5rem;">
-        <h3>✅ 已點交的書 <span style="color: var(--success-color);">(${completed.length})</span></h3>
+        <h3>
+          ✅ 已點交的書
+          <span style="color: var(--success-color); font-size: 0.9em;">
+            (${completed.length} 款 / 共 ${completedTotal} 本)
+          </span>
+        </h3>
         ${renderBookTable(completed)}
       </div>
     </div>
@@ -382,18 +396,32 @@ const renderWithoutISBNView = () => {
     const pending = booksWithoutISBN.filter(book => book.handedOver < book.quantity);
     const completed = booksWithoutISBN.filter(book => book.handedOver >= book.quantity);
 
+    // Calculate total quantities
+    const pendingTotal = pending.reduce((sum, book) => sum + (book.quantity - book.handedOver), 0);
+    const completedTotal = completed.reduce((sum, book) => sum + book.handedOver, 0);
+
     return `
     <div class="view-card">
       <h2>❌ 沒有 ISBN 的書籍</h2>
       <p class="description">顯示所有未查詢到 ISBN 的書籍資料</p>
       
       <div class="book-list-section">
-        <h3>📋 未點交的書 <span style="color: var(--warning-color);">(${pending.length})</span></h3>
+        <h3>
+          📋 未點交的書
+          <span style="color: var(--warning-color); font-size: 0.9em;">
+            (${pending.length} 款 / 共 ${pendingTotal} 本)
+          </span>
+        </h3>
         ${renderBookTable(pending, true)}
       </div>
 
       <div class="book-list-section" style="margin-top: 1.5rem;">
-        <h3>✅ 已點交的書 <span style="color: var(--success-color);">(${completed.length})</span></h3>
+        <h3>
+          ✅ 已點交的書
+          <span style="color: var(--success-color); font-size: 0.9em;">
+            (${completed.length} 款 / 共 ${completedTotal} 本)
+          </span>
+        </h3>
         ${renderBookTable(completed, true)}
       </div>
     </div>
@@ -405,16 +433,30 @@ const renderHandoverView = () => {
     const pending = booksData.filter(book => book.handedOver < book.quantity);
     const completed = booksData.filter(book => book.handedOver >= book.quantity);
 
+    // Calculate total quantities
+    const pendingTotal = pending.reduce((sum, book) => sum + (book.quantity - book.handedOver), 0);
+    const completedTotal = completed.reduce((sum, book) => sum + book.handedOver, 0);
+
     return `
     <div class="handover-view">
       <div class="split-left">
         <div class="book-list-section">
-          <h3>📋 未點交的書 <span style="color: var(--warning-color);">(${pending.length})</span></h3>
+          <h3>
+            📋 未點交的書
+            <span id="pending-stats" style="color: var(--warning-color); font-size: 0.9em;">
+              (${pending.length} 款 / 共 ${pendingTotal} 本)
+            </span>
+          </h3>
           <div id="pending-books">${renderHandoverBookTable(pending, true, 'pending')}</div>
         </div>
         
         <div class="book-list-section">
-          <h3>✅ 已點交的書 <span style="color: var(--success-color);">(${completed.length})</span></h3>
+          <h3>
+            ✅ 已點交的書
+            <span id="completed-stats" style="color: var(--success-color); font-size: 0.9em;">
+              (${completed.length} 款 / 共 ${completedTotal} 本)
+            </span>
+          </h3>
           <div id="completed-books">${renderHandoverBookTable(completed, true, 'completed')}</div>
         </div>
       </div>
@@ -442,16 +484,29 @@ const setupHandoverHandlers = () => {
 
     // Helper function to refresh book lists
     const refreshBookLists = () => {
+        const pending = booksData.filter(book => book.handedOver < book.quantity);
+        const completed = booksData.filter(book => book.handedOver >= book.quantity);
+
         document.getElementById('pending-books').innerHTML = renderHandoverBookTable(
-            booksData.filter(book => book.handedOver < book.quantity),
+            pending,
             true,
             'pending'
         );
         document.getElementById('completed-books').innerHTML = renderHandoverBookTable(
-            booksData.filter(book => book.handedOver >= book.quantity),
+            completed,
             true,
             'completed'
         );
+
+        // Update stats
+        const pendingTotal = pending.reduce((sum, book) => sum + (book.quantity - book.handedOver), 0);
+        const completedTotal = completed.reduce((sum, book) => sum + book.handedOver, 0);
+
+        const pendingStats = document.getElementById('pending-stats');
+        const completedStats = document.getElementById('completed-stats');
+
+        if (pendingStats) pendingStats.textContent = `(${pending.length} 款 / 共 ${pendingTotal} 本)`;
+        if (completedStats) completedStats.textContent = `(${completed.length} 款 / 共 ${completedTotal} 本)`;
     };
 
     // Handler for button clicks
