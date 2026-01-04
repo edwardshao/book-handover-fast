@@ -59,4 +59,15 @@ npm run deploy
 ```
 
 ## ⚙️ 設定
-- **API Key**: 可在首頁設定 Google Books API Key 以增加查詢配額。
+
+### 1. Google Books API Key (選填)
+可在「1. 轉換書單」頁面設定 Google Books API Key。設定後可以增加查詢配額，提高自動識別 ISBN 的成功率。
+
+### 2. CORS Proxy URL (選填)
+由於部分圖書資訊來源（如「博客來 Books.com.tw」）有跨域限制，如果您需要使用這些來源備份查詢，請設定自定義的 CORS Proxy URL。
+- **格式**：`example.com`（不含 `https://` 與結尾的 `/api`）。
+- **運作方式**：系統會將其轉換為 `https://${proxy_url}/api?${target_url}`。
+- **注意**：如果沒有設定 Proxy URL，系統將只會使用 [Google Books API](https://developers.google.com/books) 進行查詢，並略過需要代理的來源，以節省等待時間。
+
+## 📊 搜尋回饋
+在轉換書單的查詢進程中，系統會即時顯示目前正在使用的查詢來源（Google Books 或 Books.com.tw），方便您了解目前的進度與來源。
