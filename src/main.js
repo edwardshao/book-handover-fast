@@ -113,9 +113,9 @@ const renderConvertView = () => {
         : `
         <div class="proxy-url-section" style="margin-bottom: 2rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color);">
             <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">設定 CORS Proxy URL (選填，用於抓取博客來資料)</p>
-            <p style="margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-tertiary);">格式: example.com (不含 https:// 和 /api)</p>
+            <p style="margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-tertiary);">範例: https://proxy.example.com/api</p>
             <div style="display: flex; gap: 0.5rem;">
-                <input type="text" id="proxy-url-input" placeholder="輸入 Proxy URL (例如: proxy.example.workers.dev)..." style="flex: 1; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--panel-bg); color: var(--text-primary);">
+                <input type="text" id="proxy-url-input" placeholder="輸入完整 Proxy URL (包含 http/https)..." style="flex: 1; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--panel-bg); color: var(--text-primary);">
                 <button class="btn" id="save-proxy-url-btn" style="padding: 0.5rem 1rem;">儲存</button>
             </div>
         </div>`;
@@ -176,8 +176,12 @@ const setupConvertHandlers = () => {
 
     if (saveProxyBtn) {
         saveProxyBtn.addEventListener('click', () => {
-            const url = proxyUrlInput.value.trim().replace(/^https?:\/\//, '').replace(/\/api$/, '').replace(/\/$/, '');
+            let url = proxyUrlInput.value.trim();
             if (url) {
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    alert('請輸入包含 http:// 或 https:// 的完整 URL');
+                    return;
+                }
                 localStorage.setItem('cors_proxy_url', url);
                 renderView('convert'); // Refresh view
             }

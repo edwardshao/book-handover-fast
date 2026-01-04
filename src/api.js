@@ -6,7 +6,7 @@ const fetchWithProxy = async (targetUrl) => {
         console.warn('CORS Proxy URL is not set. Skipping fetch.');
         return '';
     }
-    const proxyUrl = `https://${customProxy}/api?${encodeURIComponent(targetUrl)}`;
+    const proxyUrl = `${customProxy}?${encodeURIComponent(targetUrl)}`;
 
     const maxRetries = 5;
 
