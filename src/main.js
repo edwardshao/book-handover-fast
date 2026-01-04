@@ -98,12 +98,37 @@ const renderConvertView = () => {
             </div>
         </div>`;
 
+    const proxyUrl = localStorage.getItem('cors_proxy_url');
+    const proxyUrlHtml = proxyUrl
+        ? `
+        <div class="proxy-url-section" style="margin-bottom: 2rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(88, 166, 255, 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <p style="color: var(--accent-color); font-weight: 600;">🌐 CORS Proxy 已設定</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;">URL: ${proxyUrl}</p>
+                </div>
+                <button class="btn btn-secondary" id="clear-proxy-url-btn" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">清除 Proxy</button>
+            </div>
+        </div>`
+        : `
+        <div class="proxy-url-section" style="margin-bottom: 2rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color);">
+            <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">設定 CORS Proxy URL (選填，用於抓取博客來資料)</p>
+            <p style="margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-tertiary);">格式: example.com (不含 https:// 和 /api)</p>
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="proxy-url-input" placeholder="輸入 Proxy URL (例如: proxy.example.workers.dev)..." style="flex: 1; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--panel-bg); color: var(--text-primary);">
+                <button class="btn" id="save-proxy-url-btn" style="padding: 0.5rem 1rem;">儲存</button>
+            </div>
+        </div>`;
+
     return `
     <div class="view-card">
       <h2>📄 轉換書單 → 點交系統書單</h2>
       <p class="description">上傳 CSV 書單，系統會自動使用 Google Books API 查詢 ISBN，並產生點交系統專用的 JSON 檔案。</p>
       
-      ${apiKeyHtml}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          ${apiKeyHtml}
+          ${proxyUrlHtml}
+      </div>
 
       <div class="upload-box" id="csv-upload-box">
         <p style="font-size: 2rem; margin-bottom: 1rem;">📤</p>
@@ -139,6 +164,30 @@ const setupConvertHandlers = () => {
         clearKeyBtn.addEventListener('click', () => {
             if (confirm('確定要清除 API Key 嗎？')) {
                 localStorage.removeItem('google_books_api_key');
+                renderView('convert'); // Refresh view
+            }
+        });
+    }
+
+    // Proxy URL Handlers
+    const saveProxyBtn = document.getElementById('save-proxy-url-btn');
+    const clearProxyBtn = document.getElementById('clear-proxy-url-btn');
+    const proxyUrlInput = document.getElementById('proxy-url-input');
+
+    if (saveProxyBtn) {
+        saveProxyBtn.addEventListener('click', () => {
+            const url = proxyUrlInput.value.trim().replace(/^https?:\/\//, '').replace(/\/api$/, '').replace(/\/$/, '');
+            if (url) {
+                localStorage.setItem('cors_proxy_url', url);
+                renderView('convert'); // Refresh view
+            }
+        });
+    }
+
+    if (clearProxyBtn) {
+        clearProxyBtn.addEventListener('click', () => {
+            if (confirm('確定要清除 CORS Proxy URL 嗎？')) {
+                localStorage.removeItem('cors_proxy_url');
                 renderView('convert'); // Refresh view
             }
         });
@@ -188,9 +237,13 @@ const processCSVFile = async (file) => {
     const results = [];
     for (let i = 0; i < books.length; i++) {
         const book = books[i];
-        resultDiv.innerHTML = `<div class="spinner"></div><p>正在查詢 ISBN... (${i + 1}/${books.length})</p>`;
 
-        const isbns = await searchISBNByTitle(book.title);
+        const isbns = await searchISBNByTitle(book.title, (source) => {
+            resultDiv.innerHTML = `<div class="spinner"></div>
+                                   <p>正在查詢 ISBN... (${i + 1}/${books.length})</p>
+                                   <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">來源: <span style="color: var(--accent-color); font-weight: 500;">${source}</span></p>
+                                   <p style="font-size: 0.85rem; color: var(--text-secondary);">書名: ${book.title}</p>`;
+        });
         results.push({
             title: book.title,
             quantity: book.quantity,

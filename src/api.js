@@ -1,7 +1,13 @@
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const fetchWithProxy = async (targetUrl) => {
-    const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+    const customProxy = localStorage.getItem('cors_proxy_url');
+    if (!customProxy) {
+        console.warn('CORS Proxy URL is not set. Skipping fetch.');
+        return '';
+    }
+    const proxyUrl = `https://${customProxy}/api?${encodeURIComponent(targetUrl)}`;
+
     const maxRetries = 5;
 
     for (let i = 0; i < maxRetries; i++) {
@@ -87,8 +93,9 @@ const searchBooksDotComTw = async (title) => {
     }
 };
 
-export const searchISBNByTitle = async (title) => {
+export const searchISBNByTitle = async (title, onSourceChange) => {
     try {
+        if (onSourceChange) onSourceChange('Google Books');
         const apiKey = localStorage.getItem('google_books_api_key');
         let url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}&maxResults=5`;
         if (apiKey) {
@@ -123,12 +130,25 @@ export const searchISBNByTitle = async (title) => {
         }
 
         // If we reached here, Google Books failed or returned no ISBNs. Try fallback.
+        const customProxy = localStorage.getItem('cors_proxy_url');
+        if (!customProxy) {
+            console.log('Google Books returned no results and no CORS Proxy set. Skipping Books.com.tw fallback.');
+            return [];
+        }
+
         console.log('Google Books returned no results. Trying Books.com.tw fallback...');
+        if (onSourceChange) onSourceChange('Books.com.tw');
         return await searchBooksDotComTw(title);
 
     } catch (error) {
         console.error(`Error searching ISBN for "${title}":`, error);
-        // Try fallback on error
-        return await searchBooksDotComTw(title);
+
+        // Try fallback on error only if proxy is set
+        const customProxy = localStorage.getItem('cors_proxy_url');
+        if (customProxy) {
+            if (onSourceChange) onSourceChange('Books.com.tw');
+            return await searchBooksDotComTw(title);
+        }
+        return [];
     }
 };
