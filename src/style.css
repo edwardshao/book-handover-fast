@@ -113,10 +113,39 @@ main {
 
 footer {
   text-align: center;
-  padding: 1.5rem;
+  padding: 2rem;
   border-top: 1px solid var(--border-color);
   color: var(--text-secondary);
   font-size: 0.85rem;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.github-link {
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.github-link:hover {
+  color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.github-icon {
+  filter: drop-shadow(0 0 4px rgba(88, 166, 255, 0));
+  transition: all 0.2s ease;
+}
+
+.github-link:hover .github-icon {
+  filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.4));
 }
 
 /* View Container Styles */
