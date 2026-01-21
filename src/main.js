@@ -1,6 +1,6 @@
 import { initDB, getAllBooks, saveBooks, updateBookHandedOver, clearAllBooks } from './db.js';
 import { searchISBNByTitle } from './api.js';
-import { parseCSV, downloadJSON } from './utils.js';
+import { parseCSV, downloadJSON, playSuccessSound, playErrorSound } from './utils.js';
 
 let currentView = 'convert';
 let booksData = [];
@@ -614,6 +614,9 @@ const setupHandoverHandlers = () => {
                 await updateBookHandedOver(matchedBook.id, newHandedOver);
                 await loadBooksData();
 
+                // Play success sound
+                playSuccessSound();
+
                 // Show success message
                 matchResult.innerHTML = `
           <div style="background: rgba(35, 134, 54, 0.2); border: 1px solid var(--success-color); border-radius: 8px; padding: 1rem;">
@@ -627,6 +630,9 @@ const setupHandoverHandlers = () => {
                 refreshBookLists();
                 updateProgress();
             } else if (matchedBook && matchedBook.handedOver >= matchedBook.quantity) {
+                // Play error sound (warning)
+                playErrorSound();
+
                 matchResult.innerHTML = `
           <div style="background: rgba(210, 153, 34, 0.2); border: 1px solid var(--warning-color); border-radius: 8px; padding: 1rem;">
             <p style="color: var(--warning-color); font-weight: 600;">⚠️ 此書已全部點交完成</p>
@@ -634,6 +640,9 @@ const setupHandoverHandlers = () => {
           </div>
         `;
             } else {
+                // Play error sound
+                playErrorSound();
+
                 matchResult.innerHTML = `
           <div style="background: rgba(248, 81, 73, 0.2); border: 1px solid var(--danger-color); border-radius: 8px; padding: 1rem;">
             <p style="color: var(--danger-color); font-weight: 600;">❌ 找不到符合的書籍</p>
